@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { X, Bitcoin } from 'lucide-react';
 import { useCart } from '@/app/contexts/CartContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/app/components/ui/button';
@@ -7,61 +7,60 @@ import { Button } from '@/app/components/ui/button';
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  setIsOpen: (open: boolean) => void; // إضافة للتحكم بفتح المودال
 }
 
-export function CheckoutModal({ isOpen, onClose, setIsOpen }: CheckoutModalProps) {
-  const { cart, addToCart, clearCart, cartTotal } = useCart();
+export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
+  const { cart, cartTotal, clearCart } = useCart();
   const { t } = useLanguage();
 
-  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'crypto' | null>(null);
-  const [cryptoType, setCryptoType] = useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
+  const [paymentMethod, setPaymentMethod] =
+    useState<'paypal' | 'crypto' | null>(null);
+
+  const [cryptoType, setCryptoType] =
+    useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const customEvent = e as CustomEvent<{ autoOpenPayment?: boolean; product?: any }>;
-      if (customEvent.detail?.product) {
-        // فتح المودال مباشرة
-        setIsOpen(true);
-        clearCart();
-        addToCart(customEvent.detail.product);
-
-        if (customEvent.detail.autoOpenPayment) {
-          setPaymentMethod('paypal'); // افتراضياً فتح PayPal
-        }
-      }
-    };
-    window.addEventListener('open-checkout', handler);
-    return () => window.removeEventListener('open-checkout', handler);
-  }, []);
 
   if (!isOpen) return null;
 
   const cryptoAddresses = {
-    bitcoin: 'BEP20: 0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
-    ethereum: 'BEP20: 0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
-    usdt: 'TRC20: TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
+    bitcoin: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
+    ethereum: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
+    usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
   };
 
-  const handlePayPalCheckout = async () => {
-    setIsProcessing(true);
-    // هنا تضيف PayPal API
-    setTimeout(() => {
-      setIsProcessing(false);
-      setOrderComplete(true);
-      setTimeout(() => {
-        clearCart();
-        onClose();
-        setOrderComplete(false);
-        setPaymentMethod(null);
-      }, 3000);
-    }, 2000);
+  const TELEGRAM_BOT_TOKEN = '7668449814:AAHqs_kGDuPO_iNSHZeIqc-tGHQyKVJXe_8';
+  const TELEGRAM_CHAT_ID = '1230522788';
+
+  const sendTelegramMessage = async (message: string) => {
+    try {
+      await fetch(
+        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+          }),
+        }
+      );
+    } catch (error) {
+      console.error('Telegram message failed:', error);
+    }
   };
 
-  const handleCryptoCheckout = () => {
+  const handleCryptoCheckout = async () => {
     setIsProcessing(true);
+
+    const message = `
+🟢 تم شراء منتج عبر العملات الرقمية
+طريقة الدفع: ${cryptoType?.toUpperCase()}
+المبلغ: $${cartTotal.toFixed(2)}
+`;
+    await sendTelegramMessage(message);
+
     setTimeout(() => {
       setIsProcessing(false);
       setOrderComplete(true);
@@ -72,7 +71,7 @@ export function CheckoutModal({ isOpen, onClose, setIsOpen }: CheckoutModalProps
         setPaymentMethod(null);
         setCryptoType(null);
       }, 3000);
-    }, 2000);
+    }, 1000);
   };
 
   return (
@@ -98,7 +97,9 @@ export function CheckoutModal({ isOpen, onClose, setIsOpen }: CheckoutModalProps
                 <h3 className="font-semibold mb-3">{t('orderSummary')}</h3>
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span>{t(item.nameKey)} × {item.quantity}</span>
+                    <span>
+                      {t(item.nameKey)} × {item.quantity}
+                    </span>
                     <span>${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
@@ -108,40 +109,41 @@ export function CheckoutModal({ isOpen, onClose, setIsOpen }: CheckoutModalProps
                 </div>
               </div>
 
-              {/* فتح طريقة الدفع مباشرة إذا Buy Now */}
-              {paymentMethod ? (
-                <>
-                  {paymentMethod === 'paypal' && (
-                    <div className="space-y-4">
-                      <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
-                      <Button onClick={handlePayPalCheckout} disabled={isProcessing} className="w-full bg-blue-600">
-                        {isProcessing ? t('processing') : 'Pay with PayPal'}
-                      </Button>
-                    </div>
-                  )}
-                  {paymentMethod === 'crypto' && !cryptoType && (
-                    <div className="space-y-3">
-                      <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
-                      <Button onClick={() => setCryptoType('bitcoin')}>Bitcoin</Button>
-                      <Button onClick={() => setCryptoType('ethereum')}>Ethereum</Button>
-                      <Button onClick={() => setCryptoType('usdt')}>USDT</Button>
-                    </div>
-                  )}
-                  {paymentMethod === 'crypto' && cryptoType && (
-                    <div className="space-y-4">
-                      <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">← {t('back')}</button>
-                      <div className="bg-gray-100 p-4 rounded-lg">
-                        <p className="text-sm mb-2">أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:</p>
-                        <strong className="break-all">{cryptoAddresses[cryptoType]}</strong>
-                      </div>
-                      <Button onClick={handleCryptoCheckout} className="w-full bg-orange-500">تم التحويل</Button>
-                    </div>
-                  )}
-                </>
-              ) : (
+              {!paymentMethod && (
                 <div className="space-y-3">
-                  <Button onClick={() => setPaymentMethod('paypal')} className="w-full bg-blue-600">PayPal</Button>
-                  <Button onClick={() => setPaymentMethod('crypto')} className="w-full bg-orange-500">{t('cryptocurrency')}</Button>
+                  <Button onClick={() => setPaymentMethod('crypto')} className="w-full bg-orange-500">
+                    {t('cryptocurrency')}
+                  </Button>
+                </div>
+              )}
+
+              {paymentMethod === 'crypto' && !cryptoType && (
+                <div className="space-y-3">
+                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">
+                    ← {t('back')}
+                  </button>
+                  <Button onClick={() => setCryptoType('bitcoin')}>Bitcoin</Button>
+                  <Button onClick={() => setCryptoType('ethereum')}>Ethereum</Button>
+                  <Button onClick={() => setCryptoType('usdt')}>USDT</Button>
+                </div>
+              )}
+
+              {paymentMethod === 'crypto' && cryptoType && (
+                <div className="space-y-4">
+                  <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">
+                    ← {t('back')}
+                  </button>
+
+                  <div className="bg-gray-100 p-4 rounded-lg">
+                    <p className="text-sm mb-2">
+                      أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:
+                    </p>
+                    <strong className="break-all">{cryptoAddresses[cryptoType]}</strong>
+                  </div>
+
+                  <Button onClick={handleCryptoCheckout} className="w-full bg-orange-500">
+                    تم التحويل
+                  </Button>
                 </div>
               )}
             </>
