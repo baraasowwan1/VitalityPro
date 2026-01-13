@@ -7,8 +7,8 @@ const products = [
   {
     id: 1,
     image: 'https://media.zid.store/8a5f4b81-ebc0-44bd-9005-126976b57582/81ce2c37-6db2-4c1e-ad5a-e914639f0a85.pngv1717751209',
-    nameKey: 'naturalSupplementFormula',
-    descriptionKey: 'naturalSupplementDesc',
+    nameKey: 'Cialis',
+    descriptionKey: 'Cialis',
     category: 'supplements',
     badge: 'NEW',
     price: 19.99,
@@ -17,8 +17,8 @@ const products = [
   {
     id: 2,
     image: 'https://aljawaher.online/cdn/shop/files/164998001_1_eddbee8f-3243-442e-b31a-15733dde732a.jpg?v=1763795115',
-    nameKey: 'premiumEnhancementDevice',
-    descriptionKey: 'premiumDeviceDesc',
+    nameKey: 'Golden X Men',
+    descriptionKey: 'Golden X Men',
     category: 'devices',
     badge: 'POPULAR',
     price: 39.99,
@@ -27,8 +27,8 @@ const products = [
   {
     id: 3,
     image: 'https://www.dumyah.com/image/cache/data/2024/11/1731400855295443518-800x800.webp',
-    nameKey: 'powerBoostCapsules',
-    descriptionKey: 'powerBoostDesc',
+    nameKey: 'kotomoto',
+    descriptionKey: 'kotomoto',
     category: 'supplements',
     price: 29.99,
     originalPrice: null,
