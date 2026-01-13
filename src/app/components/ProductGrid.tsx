@@ -6,7 +6,7 @@ import { Button } from '@/app/components/ui/button';
 const products = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1693996047008-1b6210099be1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWxsbmVzcyUyMHN1cHBsZW1lbnRzJTIwYm90dGxlfGVufDF8fHx8MTc2ODIxODgzOHww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://media.zid.store/8a5f4b81-ebc0-44bd-9005-126976b57582/81ce2c37-6db2-4c1e-ad5a-e914639f0a85.pngv1717751209',
     nameKey: 'naturalSupplementFormula',
     descriptionKey: 'naturalSupplementDesc',
     category: 'supplements',
@@ -16,7 +16,7 @@ const products = [
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1762328500413-1a4cb2023059?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGglMjBzdXBwbGVtZW50JTIwcGlsbHN8ZW58MXx8fHwxNzY4MjYxMzc0fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://aljawaher.online/cdn/shop/files/164998001_1_eddbee8f-3243-442e-b31a-15733dde732a.jpg?v=1763795115',
     nameKey: 'premiumEnhancementDevice',
     descriptionKey: 'premiumDeviceDesc',
     category: 'devices',
@@ -26,7 +26,7 @@ const products = [
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1707129785947-ddc627a8bab9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuYXR1cmFsJTIwc3VwcGxlbWVudHN8ZW58MXx8fHwxNzY4MjIyMDEwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://www.dumyah.com/image/cache/data/2024/11/1731400855295443518-800x800.webp',
     nameKey: 'powerBoostCapsules',
     descriptionKey: 'powerBoostDesc',
     category: 'supplements',
