@@ -4,7 +4,7 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner'; // مكتبة Toast
+import { toast } from 'sonner'; // لإظهار إشعار عند إضافة للسلة
 
 interface ProductCardProps {
   image: string;
@@ -27,25 +27,19 @@ export function ProductCard({
   price,
   originalPrice,
 }: ProductCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { addToCart } = useCart();
 
-  // إضافة للسلة بدون فتح Checkout
+  // زر إضافة للسلة فقط
   const handleAddToCart = () => {
     addToCart({ id, nameKey, price, image });
-    toast.success('تمت الإضافة إلى السلة ✅');
+    toast.success(t('addedToCart') || 'تمت الإضافة إلى السلة ✅');
   };
 
-  // شراء فوراً → إضافة المنتج للسلة وفتح Checkout مباشرة
+  // زر الشراء فوراً → يفتح Checkout مباشرة بدون إضافة للسلة
   const handleBuyNow = () => {
-    addToCart({ id, nameKey, price, image });
-
-    // إشعار
-    toast.success('تمت الإضافة وفتح صفحة الدفع ✅');
-
-    // إرسال حدث لفتح CheckoutModal
     const event = new CustomEvent('open-checkout', {
-      detail: { autoOpenPayment: true },
+      detail: { autoOpenPayment: true, product: { id, nameKey, price, image } },
     });
     window.dispatchEvent(event);
   };
@@ -79,8 +73,8 @@ export function ProductCard({
           )}
         </div>
 
-        {/* أزرار الإضافة والشراء فوراً */}
         <div className="flex gap-2 w-full">
+          {/* إضافة للسلة */}
           <Button
             onClick={handleAddToCart}
             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
@@ -90,13 +84,14 @@ export function ProductCard({
             {t('addToCart')}
           </Button>
 
+          {/* الشراء فوراً → فتح Checkout */}
           <Button
             onClick={handleBuyNow}
             className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
             size="sm"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            الشراء فوراً
+            {language === 'ar' ? 'الشراء فوراً' : 'Buy Now'}
           </Button>
         </div>
       </CardFooter>
