@@ -4,7 +4,6 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner'; // لإظهار إشعار عند إضافة للسلة
 
 interface ProductCardProps {
   image: string;
@@ -27,21 +26,14 @@ export function ProductCard({
   price,
   originalPrice,
 }: ProductCardProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { addToCart } = useCart();
 
-  // زر إضافة للسلة فقط
   const handleAddToCart = () => {
     addToCart({ id, nameKey, price, image });
-    toast.success(t('addedToCart') || 'تمت الإضافة إلى السلة ✅');
-  };
 
-  // زر الشراء فوراً → يفتح Checkout مباشرة بدون إضافة للسلة
-  const handleBuyNow = () => {
-    const event = new CustomEvent('open-checkout', {
-      detail: { autoOpenPayment: true, product: { id, nameKey, price, image } },
-    });
-    window.dispatchEvent(event);
+    // يمكن إضافة إشعار أو toast هنا
+    alert(`${t(nameKey)} ${t('addedToCart')}`);
   };
 
   return (
@@ -69,31 +61,21 @@ export function ProductCard({
         <div className="flex items-center gap-2">
           <div className="text-2xl font-bold text-purple-600">${price.toFixed(2)}</div>
           {originalPrice && (
-            <div className="text-sm text-gray-400 line-through">${originalPrice.toFixed(2)}</div>
+            <div className="text-sm text-gray-400 line-through">
+              ${originalPrice.toFixed(2)}
+            </div>
           )}
         </div>
 
-        <div className="flex gap-2 w-full">
-          {/* إضافة للسلة */}
-          <Button
-            onClick={handleAddToCart}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {t('addToCart')}
-          </Button>
-
-          {/* الشراء فوراً → فتح Checkout */}
-          <Button
-            onClick={handleBuyNow}
-            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {language === 'ar' ? 'الشراء فوراً' : 'Buy Now'}
-          </Button>
-        </div>
+        {/* زر إضافة إلى السلة فقط */}
+        <Button
+          onClick={handleAddToCart}
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          size="sm"
+        >
+          <ShoppingCart className="h-4 w-4 mr-2" />
+          {t('addToCart')}
+        </Button>
       </CardFooter>
     </Card>
   );
