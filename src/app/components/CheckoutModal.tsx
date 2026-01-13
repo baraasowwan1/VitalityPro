@@ -30,7 +30,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const handlePayPalCheckout = async () => {
     setIsProcessing(true);
     // هنا ضع إعدادات PayPal SDK أو رابط الدفع
-    window.open('https://www.paypal.com/checkoutnow?token=YOUR_TOKEN', '_blank');
+    window.open('https://www.paypal.com/checkoutnow?token=Ad_-EhCeBR7jA9oKRYM9AEOtiStqFZGCuQHTBTS0WP8tLQ6QVH9Tp3ZWWSDeG5n7J3yLP8RoXGhQzRkW', '_blank');
     setIsProcessing(false);
   };
 
