@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { X, CreditCard, Bitcoin } from 'lucide-react';
 import { useCart } from '@/app/contexts/CartContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/app/components/ui/button';
@@ -13,40 +12,66 @@ interface CheckoutModalProps {
 export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const { cart, cartTotal, clearCart } = useCart();
   const { t } = useLanguage();
-
-  const [paymentMethod, setPaymentMethod] =
-    useState<'paypal' | 'crypto' | null>(null);
-  const [cryptoType, setCryptoType] =
-    useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'crypto' | null>(null);
+  const [cryptoType, setCryptoType] = useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
 
-  // 🔹 useEffect لفتح المودال من زر الشراء فوراً
-  useEffect(() => {
-    const open = () => {
-      // هنا لا يوجد setIsOpen لأنه isOpen يأتي من props
-      // نفترض أن الضغط على open-checkout يقوم بتفعيل isOpen
-      // إذا أردت يمكن تحويل isOpen إلى state داخلي لاحقاً
-    };
-    window.addEventListener('open-checkout', open);
-    return () => window.removeEventListener('open-checkout', open);
-  }, []);
-
-  if (!isOpen) return null;
-
+  // عناوين العملات الرقمية
   const cryptoAddresses = {
     bitcoin: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
     ethereum: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
     usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
   };
 
+  // استقبال حدث فتح Checkout
+  useEffect(() => {
+    const openHandler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ autoOpenPayment?: boolean }>;
+      if (customEvent.detail?.autoOpenPayment) {
+        setPaymentMethod('paypal'); // افتراضي اختر PayPal أو اترك المستخدم يختار
+      }
+    };
+    window.addEventListener('open-checkout', openHandler);
+    return () => window.removeEventListener('open-checkout', openHandler);
+  }, []);
+
+  if (!isOpen) return null;
+
+  const handlePayPalCheckout = async () => {
+    setIsProcessing(true);
+    // هنا تضيف API البايبال لاحقاً
+    setTimeout(() => {
+      setIsProcessing(false);
+      setOrderComplete(true);
+      setTimeout(() => {
+        clearCart();
+        onClose();
+        setOrderComplete(false);
+        setPaymentMethod(null);
+      }, 3000);
+    }, 2000);
+  };
+
+  const handleCryptoCheckout = async () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setOrderComplete(true);
+      setTimeout(() => {
+        clearCart();
+        onClose();
+        setOrderComplete(false);
+        setPaymentMethod(null);
+        setCryptoType(null);
+      }, 3000);
+    }, 2000);
+  };
+
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
-
-      {/* Modal */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-lg shadow-xl z-50 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold">{t('checkout')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
@@ -54,25 +79,20 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6">
           {orderComplete ? (
             <div className="text-center py-8">
-              <h3 className="text-xl font-bold text-green-600 mb-2">
-                {t('orderSuccess')}
-              </h3>
+              <h3 className="text-xl font-bold text-green-600 mb-2">{t('orderSuccess')}</h3>
               <p className="text-gray-600">{t('orderSuccessMessage')}</p>
             </div>
           ) : (
             <>
-              {/* Order Summary */}
+              {/* ملخص الطلب */}
               <div className="mb-6">
                 <h3 className="font-semibold mb-3">{t('orderSummary')}</h3>
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span>
-                      {t(item.nameKey)} × {item.quantity}
-                    </span>
+                    <span>{t(item.nameKey)} × {item.quantity}</span>
                     <span>${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
@@ -82,117 +102,43 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               </div>
 
-              {/* Payment selection */}
+              {/* اختيار طريقة الدفع */}
               {!paymentMethod && (
                 <div className="space-y-3">
-                  <Button
-                    onClick={() => setPaymentMethod('paypal')}
-                    className="w-full bg-blue-600"
-                  >
-                    PayPal
-                  </Button>
-
-                  <Button
-                    onClick={() => setPaymentMethod('crypto')}
-                    className="w-full bg-orange-500"
-                  >
-                    {t('cryptocurrency')}
-                  </Button>
+                  <Button onClick={() => setPaymentMethod('paypal')} className="w-full bg-blue-600">PayPal</Button>
+                  <Button onClick={() => setPaymentMethod('crypto')} className="w-full bg-orange-500">{t('cryptocurrency')}</Button>
                 </div>
               )}
 
               {/* PayPal */}
               {paymentMethod === 'paypal' && (
                 <div className="space-y-4">
-                  <button
-                    onClick={() => setPaymentMethod(null)}
-                    className="text-sm text-purple-600"
-                  >
-                    ← {t('back')}
-                  </button>
-
-                  <PayPalScriptProvider
-                    options={{
-                      'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID,
-                      currency: 'USD',
-                    }}
-                  >
-                    <PayPalButtons
-                      style={{ layout: 'vertical' }}
-                      createOrder={(data, actions) =>
-                        actions.order.create({
-                          purchase_units: [
-                            {
-                              amount: {
-                                value: cartTotal.toFixed(2),
-                              },
-                            },
-                          ],
-                        })
-                      }
-                      onApprove={(data, actions) =>
-                        actions.order!.capture().then(() => {
-                          setOrderComplete(true);
-                          setTimeout(() => {
-                            clearCart();
-                            onClose();
-                            setOrderComplete(false);
-                            setPaymentMethod(null);
-                          }, 3000);
-                        })
-                      }
-                    />
-                  </PayPalScriptProvider>
+                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
+                  <Button onClick={handlePayPalCheckout} disabled={isProcessing} className="w-full bg-blue-600">
+                    {isProcessing ? t('processing') : 'Pay with PayPal'}
+                  </Button>
                 </div>
               )}
 
-              {/* Crypto */}
+              {/* اختيار العملة الرقمية */}
               {paymentMethod === 'crypto' && !cryptoType && (
                 <div className="space-y-3">
-                  <button
-                    onClick={() => setPaymentMethod(null)}
-                    className="text-sm text-purple-600"
-                  >
-                    ← {t('back')}
-                  </button>
-
+                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
                   <Button onClick={() => setCryptoType('bitcoin')}>Bitcoin</Button>
                   <Button onClick={() => setCryptoType('ethereum')}>Ethereum</Button>
                   <Button onClick={() => setCryptoType('usdt')}>USDT</Button>
                 </div>
               )}
 
+              {/* عنوان الدفع بالعملات الرقمية */}
               {paymentMethod === 'crypto' && cryptoType && (
                 <div className="space-y-4">
-                  <button
-                    onClick={() => setCryptoType(null)}
-                    className="text-sm text-purple-600"
-                  >
-                    ← {t('back')}
-                  </button>
-
+                  <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">← {t('back')}</button>
                   <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-sm mb-2">
-                      أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:
-                    </p>
-                    <strong className="break-all">
-                      {cryptoAddresses[cryptoType]}
-                    </strong>
+                    <p className="text-sm mb-2">أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:</p>
+                    <strong className="break-all">{cryptoAddresses[cryptoType]}</strong>
                   </div>
-
-                  <Button
-                    onClick={() => {
-                      setOrderComplete(true);
-                      setTimeout(() => {
-                        clearCart();
-                        onClose();
-                        setOrderComplete(false);
-                        setPaymentMethod(null);
-                        setCryptoType(null);
-                      }, 3000);
-                    }}
-                    className="w-full bg-orange-500"
-                  >
+                  <Button onClick={handleCryptoCheckout} className="w-full bg-orange-500">
                     تم التحويل
                   </Button>
                 </div>
