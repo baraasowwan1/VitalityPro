@@ -40,9 +40,9 @@ export function CheckoutModal({ isOpen, onClose, setIsOpen }: CheckoutModalProps
   if (!isOpen) return null;
 
   const cryptoAddresses = {
-    bitcoin: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
-    ethereum: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
-    usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
+    bitcoin: 'BEP20: 0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
+    ethereum: 'BEP20: 0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
+    usdt: 'TRC20: TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
   };
 
   const handlePayPalCheckout = async () => {
