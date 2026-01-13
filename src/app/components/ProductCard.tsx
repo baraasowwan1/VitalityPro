@@ -29,10 +29,14 @@ export function ProductCard({
   const { t } = useLanguage();
   const { addToCart } = useCart();
 
-  // 🔹 دالة الشراء فوراً
+  // إضافة للسلة بدون فتح Checkout
+  const handleAddToCart = () => {
+    addToCart({ id, nameKey, price, image });
+  };
+
+  // شراء فوراً → إضافة المنتج للسلة وفتح Checkout مباشرة
   const handleBuyNow = () => {
     addToCart({ id, nameKey, price, image });
-    // فتح CheckoutModal مباشرة
     window.dispatchEvent(new Event('open-checkout'));
   };
 
@@ -59,25 +63,32 @@ export function ProductCard({
 
       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <div className="text-2xl font-bold text-purple-600">
-            ${price.toFixed(2)}
-          </div>
+          <div className="text-2xl font-bold text-purple-600">${price.toFixed(2)}</div>
           {originalPrice && (
-            <div className="text-sm text-gray-400 line-through">
-              ${originalPrice.toFixed(2)}
-            </div>
+            <div className="text-sm text-gray-400 line-through">${originalPrice.toFixed(2)}</div>
           )}
         </div>
 
-        {/* زر الشراء فوراً */}
-        <Button
-          onClick={handleBuyNow}
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-          size="sm"
-        >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          الشراء فوراً
-        </Button>
+        {/* أزرار الإضافة والشراء فوراً */}
+        <div className="flex gap-2 w-full">
+          <Button
+            onClick={handleAddToCart}
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            size="sm"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {t('addToCart')}
+          </Button>
+
+          <Button
+            onClick={handleBuyNow}
+            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            size="sm"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            الشراء فوراً
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
