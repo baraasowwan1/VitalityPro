@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { X, Bitcoin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, CreditCard, Bitcoin, UploadCloud } from 'lucide-react';
 import { useCart } from '@/app/contexts/CartContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/app/components/ui/button';
+import { toast } from 'sonner';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -29,50 +30,72 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
   const handlePayPalCheckout = async () => {
     setIsProcessing(true);
-    // هنا ضع إعدادات PayPal SDK أو رابط الدفع
-    window.open('https://www.paypal.com/checkoutnow?token=Ad_-EhCeBR7jA9oKRYM9AEOtiStqFZGCuQHTBTS0WP8tLQ6QVH9Tp3ZWWSDeG5n7J3yLP8RoXGhQzRkW', '_blank');
-    setIsProcessing(false);
-  };
 
-  const handleCryptoReceiptUpload = async () => {
-    if (!receiptFile) return;
-
-    const formData = new FormData();
-    formData.append('photo', receiptFile);
-
-    await fetch(
-      'https://api.telegram.org/bot7668449814:AAHqs_kGDuPO_iNSHZeIqc-tGHQyKVJXe_8/sendPhoto?chat_id=1230522788',
-      {
-        method: 'POST',
-        body: formData,
-      }
-    );
-
-    alert(language === 'ar' ? 'تم إرسال الإيصال' : 'Receipt sent!');
-  };
-
-  const handleCryptoCheckout = () => {
-    if (!receiptFile) {
-      alert(language === 'ar' ? 'يرجى رفع الإيصال أولاً' : 'Please upload receipt first');
+    // توجيه PayPal باستخدام SDK أو رابط الدفع
+    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    if (!clientId) {
+      alert('PayPal Client ID not set!');
+      setIsProcessing(false);
       return;
     }
 
-    setOrderComplete(true);
+    // هنا تضع SDK أو رابط PayPal الحي
+    alert(`PayPal Checkout Placeholder\nOrder Total: $${cartTotal.toFixed(2)}`);
+    
     setTimeout(() => {
-      clearCart();
-      onClose();
-      setOrderComplete(false);
-      setPaymentMethod(null);
-      setCryptoType(null);
-      setReceiptFile(null);
-    }, 3000);
+      setIsProcessing(false);
+      setOrderComplete(true);
+      setTimeout(() => {
+        clearCart();
+        onClose();
+        setOrderComplete(false);
+        setPaymentMethod(null);
+      }, 3000);
+    }, 2000);
+  };
+
+  const handleCryptoCheckout = async () => {
+    if (!cryptoType) return;
+    setIsProcessing(true);
+
+    // إرسال الإيصال للتليجرام
+    if (receiptFile) {
+      const chatId = '1230522788'; // ضع chatId الخاص بك
+      const formData = new FormData();
+      formData.append('chat_id', chatId);
+      formData.append('photo', receiptFile);
+
+      await fetch('https://api.telegram.org/bot7668449814:AAHqs_kGDuPO_iNSHZeIqc-tGHQyKVJXe_8/sendPhoto', {
+        method: 'POST',
+        body: formData,
+      });
+
+      toast.success('تم إرسال الإيصال إلى التليجرام بنجاح!');
+    }
+
+    setTimeout(() => {
+      setIsProcessing(false);
+      setOrderComplete(true);
+      setTimeout(() => {
+        clearCart();
+        onClose();
+        setOrderComplete(false);
+        setPaymentMethod(null);
+        setCryptoType(null);
+        setReceiptFile(null);
+      }, 3000);
+    }, 2000);
+  };
+
+  const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setReceiptFile(e.target.files[0]);
+    }
   };
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
-      {/* Modal */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-lg shadow-xl z-50 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold">{t('checkout')}</h2>
@@ -91,7 +114,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             <>
               <div className="mb-6">
                 <h3 className="font-semibold mb-3">{t('orderSummary')}</h3>
-                {cart.map(item => (
+                {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span>{t(item.nameKey)} × {item.quantity}</span>
                     <span>${(item.price * item.quantity).toFixed(2)}</span>
@@ -103,7 +126,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               </div>
 
-              {!paymentMethod && (
+              {!paymentMethod ? (
                 <div className="space-y-3">
                   <Button onClick={() => setPaymentMethod('paypal')} className="w-full bg-blue-600">
                     PayPal
@@ -112,7 +135,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     {t('cryptocurrency')}
                   </Button>
                 </div>
-              )}
+              ) : null}
 
               {paymentMethod === 'paypal' && (
                 <div className="space-y-4">
@@ -130,9 +153,9 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">
                     ← {t('back')}
                   </button>
-                  <Button onClick={() => setCryptoType('bitcoin')}>Bitcoin</Button>
-                  <Button onClick={() => setCryptoType('ethereum')}>Ethereum</Button>
-                  <Button onClick={() => setCryptoType('usdt')}>USDT</Button>
+                  <Button onClick={() => setCryptoType('bitcoin')} className="w-full">Bitcoin</Button>
+                  <Button onClick={() => setCryptoType('ethereum')} className="w-full">Ethereum</Button>
+                  <Button onClick={() => setCryptoType('usdt')} className="w-full">USDT</Button>
                 </div>
               )}
 
@@ -141,27 +164,22 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">
                     ← {t('back')}
                   </button>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-sm mb-2">
-                      {language === 'ar'
-                        ? `أرسل المبلغ إلى عنوان ${cryptoType.toUpperCase()}:`
-                        : `Send amount to ${cryptoType.toUpperCase()} address:`}
+
+                  <div className="bg-gray-100 p-4 rounded-lg space-y-2">
+                    <p className="text-sm">
+                      أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:
                     </p>
                     <strong className="break-all">{cryptoAddresses[cryptoType]}</strong>
+
+                    <label className="flex items-center gap-2 cursor-pointer mt-2 bg-white border p-2 rounded hover:bg-gray-50">
+                      <UploadCloud className="w-5 h-5 text-gray-700" />
+                      <span className="text-sm">رفع إيصال التحويل</span>
+                      <input type="file" className="hidden" onChange={handleReceiptChange} accept="image/*" />
+                    </label>
                   </div>
 
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={e => setReceiptFile(e.target.files ? e.target.files[0] : null)}
-                    className="w-full"
-                  />
-                  <Button onClick={handleCryptoReceiptUpload} className="w-full bg-purple-600">
-                    {language === 'ar' ? 'رفع الإيصال' : 'Upload Receipt'}
-                  </Button>
-
-                  <Button onClick={handleCryptoCheckout} className="w-full bg-orange-500">
-                    {language === 'ar' ? 'تم التحويل' : 'Confirm Transfer'}
+                  <Button onClick={handleCryptoCheckout} disabled={isProcessing} className="w-full bg-orange-500">
+                    {isProcessing ? t('processing') : 'تم التحويل'}
                   </Button>
                 </div>
               )}
