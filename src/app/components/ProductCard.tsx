@@ -30,13 +30,11 @@ export function ProductCard({
   const { addToCart } = useCart();
 
   const handleBuyNow = () => {
-    // 1️⃣ أضف المنتج للسلة
-    addToCart({
-      id,
-      nameKey,
-      price,
-      image,
-    });
+  addToCart({ id, nameKey, price, image });
+
+  // فتح CheckoutModal
+  window.dispatchEvent(new Event('open-checkout'));
+};
 
     // 2️⃣ افتح Checkout مباشرة
     window.dispatchEvent(new Event('open-checkout'));
