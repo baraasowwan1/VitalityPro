@@ -19,7 +19,7 @@ const products = [
     image: 'https://aljawaher.online/cdn/shop/files/164998001_1_eddbee8f-3243-442e-b31a-15733dde732a.jpg?v=1763795115',
     nameKey: 'Golden X Men',
     descriptionKey: 'Golden X Men',
-    category: 'devices',
+    category: 'supplements',
     badge: 'POPULAR',
     price: 39.99,
     originalPrice: null,
