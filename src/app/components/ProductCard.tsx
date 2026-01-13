@@ -16,17 +16,30 @@ interface ProductCardProps {
   id: number;
 }
 
-export function ProductCard({ id, image, nameKey, descriptionKey, category, badge, price, originalPrice }: ProductCardProps) {
+export function ProductCard({
+  id,
+  image,
+  nameKey,
+  descriptionKey,
+  category,
+  badge,
+  price,
+  originalPrice,
+}: ProductCardProps) {
   const { t } = useLanguage();
   const { addToCart } = useCart();
 
-  const handleAddToCart = () => {
+  const handleBuyNow = () => {
+    // 1️⃣ أضف المنتج للسلة
     addToCart({
       id,
       nameKey,
       price,
       image,
     });
+
+    // 2️⃣ افتح Checkout مباشرة
+    window.dispatchEvent(new Event('open-checkout'));
   };
 
   return (
@@ -43,13 +56,15 @@ export function ProductCard({ id, image, nameKey, descriptionKey, category, badg
           </Badge>
         )}
       </div>
-      
+
       <CardContent className="p-4">
         <div className="text-sm text-purple-600 mb-2">{category}</div>
         <h3 className="text-xl font-semibold mb-2">{t(nameKey)}</h3>
-        <p className="text-gray-600 text-sm line-clamp-2">{t(descriptionKey)}</p>
+        <p className="text-gray-600 text-sm line-clamp-2">
+          {t(descriptionKey)}
+        </p>
       </CardContent>
-      
+
       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="text-2xl font-bold text-purple-600">
@@ -61,19 +76,16 @@ export function ProductCard({ id, image, nameKey, descriptionKey, category, badg
             </div>
           )}
         </div>
-        <div className="flex gap-2 w-full">
-          <Button 
-            onClick={handleAddToCart}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" 
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {t('addToCart')}
-          </Button>
-          <Button variant="outline" size="sm">
-            {t('viewDetails')}
-          </Button>
-        </div>
+
+        {/* زر الشراء فوراً */}
+        <Button
+          onClick={handleBuyNow}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+          size="sm"
+        >
+          <ShoppingCart className="h-4 w-4 mr-2" />
+          الشراء فوراً
+        </Button>
       </CardFooter>
     </Card>
   );
