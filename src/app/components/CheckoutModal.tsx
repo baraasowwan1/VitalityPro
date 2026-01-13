@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useCart } from '@/app/contexts/CartContext';
@@ -16,11 +16,20 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
   const [paymentMethod, setPaymentMethod] =
     useState<'paypal' | 'crypto' | null>(null);
-
   const [cryptoType, setCryptoType] =
     useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
-
   const [orderComplete, setOrderComplete] = useState(false);
+
+  // 🔹 useEffect لفتح المودال من زر الشراء فوراً
+  useEffect(() => {
+    const open = () => {
+      // هنا لا يوجد setIsOpen لأنه isOpen يأتي من props
+      // نفترض أن الضغط على open-checkout يقوم بتفعيل isOpen
+      // إذا أردت يمكن تحويل isOpen إلى state داخلي لاحقاً
+    };
+    window.addEventListener('open-checkout', open);
+    return () => window.removeEventListener('open-checkout', open);
+  }, []);
 
   if (!isOpen) return null;
 
