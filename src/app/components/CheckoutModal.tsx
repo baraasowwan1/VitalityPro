@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, CreditCard, Bitcoin, UploadCloud } from 'lucide-react';
+import { useState } from 'react';
+import { X, Bitcoin, Ethereum, UploadCloud } from 'lucide-react';
 import { useCart } from '@/app/contexts/CartContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/app/components/ui/button';
@@ -12,7 +12,7 @@ interface CheckoutModalProps {
 
 export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const { cart, cartTotal, clearCart } = useCart();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'crypto' | null>(null);
   const [cryptoType, setCryptoType] = useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
@@ -28,20 +28,19 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
   };
 
-  const handlePayPalCheckout = async () => {
+  const handlePayPalCheckout = () => {
     setIsProcessing(true);
 
-    // توجيه PayPal باستخدام SDK أو رابط الدفع
-    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
     if (!clientId) {
       alert('PayPal Client ID not set!');
       setIsProcessing(false);
       return;
     }
 
-    // هنا تضع SDK أو رابط PayPal الحي
+    // هنا توجيه المستخدم لصفحة الدفع الحقيقية باستخدام SDK أو رابط PayPal
     alert(`PayPal Checkout Placeholder\nOrder Total: $${cartTotal.toFixed(2)}`);
-    
+
     setTimeout(() => {
       setIsProcessing(false);
       setOrderComplete(true);
@@ -58,7 +57,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     if (!cryptoType) return;
     setIsProcessing(true);
 
-    // إرسال الإيصال للتليجرام
     if (receiptFile) {
       const chatId = '1230522788'; // ضع chatId الخاص بك
       const formData = new FormData();
@@ -88,9 +86,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   };
 
   const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setReceiptFile(e.target.files[0]);
-    }
+    if (e.target.files && e.target.files[0]) setReceiptFile(e.target.files[0]);
   };
 
   return (
@@ -139,9 +135,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
               {paymentMethod === 'paypal' && (
                 <div className="space-y-4">
-                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">
-                    ← {t('back')}
-                  </button>
+                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
                   <Button onClick={handlePayPalCheckout} disabled={isProcessing} className="w-full bg-blue-600">
                     {isProcessing ? t('processing') : 'Pay with PayPal'}
                   </Button>
@@ -150,9 +144,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
               {paymentMethod === 'crypto' && !cryptoType && (
                 <div className="space-y-3">
-                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">
-                    ← {t('back')}
-                  </button>
+                  <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
                   <Button onClick={() => setCryptoType('bitcoin')} className="w-full">Bitcoin</Button>
                   <Button onClick={() => setCryptoType('ethereum')} className="w-full">Ethereum</Button>
                   <Button onClick={() => setCryptoType('usdt')} className="w-full">USDT</Button>
@@ -161,14 +153,9 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
               {paymentMethod === 'crypto' && cryptoType && (
                 <div className="space-y-4">
-                  <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">
-                    ← {t('back')}
-                  </button>
-
+                  <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">← {t('back')}</button>
                   <div className="bg-gray-100 p-4 rounded-lg space-y-2">
-                    <p className="text-sm">
-                      أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:
-                    </p>
+                    <p className="text-sm">أرسل المبلغ إلى عنوان {cryptoType.toUpperCase()}:</p>
                     <strong className="break-all">{cryptoAddresses[cryptoType]}</strong>
 
                     <label className="flex items-center gap-2 cursor-pointer mt-2 bg-white border p-2 rounded hover:bg-gray-50">
@@ -177,7 +164,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                       <input type="file" className="hidden" onChange={handleReceiptChange} accept="image/*" />
                     </label>
                   </div>
-
                   <Button onClick={handleCryptoCheckout} disabled={isProcessing} className="w-full bg-orange-500">
                     {isProcessing ? t('processing') : 'تم التحويل'}
                   </Button>
