@@ -4,6 +4,7 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner'; // ✅ استخدام Toast صغير
 
 interface ProductCardProps {
   image: string;
@@ -32,8 +33,11 @@ export function ProductCard({
   const handleAddToCart = () => {
     addToCart({ id, nameKey, price, image });
 
-    // يمكن إضافة إشعار أو toast هنا
-    alert(`${t(nameKey)} ${t('addedToCart')}`);
+    // ✅ إشعار سريع بدون alert كبير
+    toast(`${t(nameKey)} ${t('addedToCart')}`, {
+      duration: 1500, // يظهر 1.5 ثانية فقط
+      position: 'top-right', // مكان ظهور البوباب
+    });
   };
 
   return (
@@ -67,7 +71,6 @@ export function ProductCard({
           )}
         </div>
 
-        {/* زر إضافة إلى السلة فقط */}
         <Button
           onClick={handleAddToCart}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
