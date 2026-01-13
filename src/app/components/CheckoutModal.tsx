@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, CreditCard, Bitcoin } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useCart } from '@/app/contexts/CartContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/app/components/ui/button';
@@ -10,37 +10,34 @@ interface CheckoutModalProps {
 }
 
 export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, addToCart, clearCart, cartTotal } = useCart();
   const { t } = useLanguage();
+
   const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'crypto' | null>(null);
   const [cryptoType, setCryptoType] = useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
 
-  // عناوين العملات الرقمية
-  const cryptoAddresses = {
-    bitcoin: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
-    ethereum: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
-    usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
-  };
-
-  // استقبال حدث فتح Checkout
+  // استقبال حدث فتح Checkout من زر Buy Now
   useEffect(() => {
-    const openHandler = (e: Event) => {
-      const customEvent = e as CustomEvent<{ autoOpenPayment?: boolean }>;
-      if (customEvent.detail?.autoOpenPayment) {
-        setPaymentMethod('paypal'); // افتراضي اختر PayPal أو اترك المستخدم يختار
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ autoOpenPayment?: boolean; product?: any }>;
+      if (customEvent.detail?.product) {
+        // فتح Checkout لمنتج واحد فقط
+        clearCart(); // تأكد أن السلة فارغة
+        addToCart(customEvent.detail.product);
+        setPaymentMethod('paypal'); // افتراضي فتح PayPal
       }
     };
-    window.addEventListener('open-checkout', openHandler);
-    return () => window.removeEventListener('open-checkout', openHandler);
+    window.addEventListener('open-checkout', handler);
+    return () => window.removeEventListener('open-checkout', handler);
   }, []);
 
   if (!isOpen) return null;
 
   const handlePayPalCheckout = async () => {
     setIsProcessing(true);
-    // هنا تضيف API البايبال لاحقاً
+    // هنا تضيف PayPal API
     setTimeout(() => {
       setIsProcessing(false);
       setOrderComplete(true);
@@ -53,7 +50,13 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     }, 2000);
   };
 
-  const handleCryptoCheckout = async () => {
+  const cryptoAddresses = {
+    bitcoin: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
+    ethereum: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
+    usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
+  };
+
+  const handleCryptoCheckout = () => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
@@ -102,7 +105,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               </div>
 
-              {/* اختيار طريقة الدفع */}
               {!paymentMethod && (
                 <div className="space-y-3">
                   <Button onClick={() => setPaymentMethod('paypal')} className="w-full bg-blue-600">PayPal</Button>
@@ -110,7 +112,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               )}
 
-              {/* PayPal */}
               {paymentMethod === 'paypal' && (
                 <div className="space-y-4">
                   <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
@@ -120,7 +121,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               )}
 
-              {/* اختيار العملة الرقمية */}
               {paymentMethod === 'crypto' && !cryptoType && (
                 <div className="space-y-3">
                   <button onClick={() => setPaymentMethod(null)} className="text-sm text-purple-600">← {t('back')}</button>
@@ -130,7 +130,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               )}
 
-              {/* عنوان الدفع بالعملات الرقمية */}
               {paymentMethod === 'crypto' && cryptoType && (
                 <div className="space-y-4">
                   <button onClick={() => setCryptoType(null)} className="text-sm text-purple-600">← {t('back')}</button>
