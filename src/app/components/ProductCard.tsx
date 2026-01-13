@@ -4,6 +4,7 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner'; // مكتبة Toast
 
 interface ProductCardProps {
   image: string;
@@ -32,12 +33,21 @@ export function ProductCard({
   // إضافة للسلة بدون فتح Checkout
   const handleAddToCart = () => {
     addToCart({ id, nameKey, price, image });
+    toast.success('تمت الإضافة إلى السلة ✅');
   };
 
   // شراء فوراً → إضافة المنتج للسلة وفتح Checkout مباشرة
   const handleBuyNow = () => {
     addToCart({ id, nameKey, price, image });
-    window.dispatchEvent(new Event('open-checkout'));
+
+    // إشعار
+    toast.success('تمت الإضافة وفتح صفحة الدفع ✅');
+
+    // إرسال حدث لفتح CheckoutModal
+    const event = new CustomEvent('open-checkout', {
+      detail: { autoOpenPayment: true },
+    });
+    window.dispatchEvent(event);
   };
 
   return (
