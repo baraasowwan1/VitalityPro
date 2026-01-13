@@ -115,7 +115,7 @@ const translations = {
     
     // Categories
     allProducts: 'جميع المنتجات',
-    supplements: 'المكملات الغذائية',
+    supplements: 'منشطات',
     devices: 'أجهزة التحسين',
     bundles: 'العروض الخاصة',
     
