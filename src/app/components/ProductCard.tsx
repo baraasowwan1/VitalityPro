@@ -29,14 +29,10 @@ export function ProductCard({
   const { t } = useLanguage();
   const { addToCart } = useCart();
 
+  // 🔹 دالة الشراء فوراً
   const handleBuyNow = () => {
-  addToCart({ id, nameKey, price, image });
-
-  // فتح CheckoutModal
-  window.dispatchEvent(new Event('open-checkout'));
-};
-
-    // 2️⃣ افتح Checkout مباشرة
+    addToCart({ id, nameKey, price, image });
+    // فتح CheckoutModal مباشرة
     window.dispatchEvent(new Event('open-checkout'));
   };
 
@@ -58,9 +54,7 @@ export function ProductCard({
       <CardContent className="p-4">
         <div className="text-sm text-purple-600 mb-2">{category}</div>
         <h3 className="text-xl font-semibold mb-2">{t(nameKey)}</h3>
-        <p className="text-gray-600 text-sm line-clamp-2">
-          {t(descriptionKey)}
-        </p>
+        <p className="text-gray-600 text-sm line-clamp-2">{t(descriptionKey)}</p>
       </CardContent>
 
       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
@@ -87,3 +81,4 @@ export function ProductCard({
       </CardFooter>
     </Card>
   );
+}
