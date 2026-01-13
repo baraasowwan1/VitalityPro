@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X, CreditCard, Bitcoin } from 'lucide-react';
+import { X } from 'lucide-react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useCart } from '@/app/contexts/CartContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/app/components/ui/button';
@@ -19,7 +20,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const [cryptoType, setCryptoType] =
     useState<'bitcoin' | 'ethereum' | 'usdt' | null>(null);
 
-  const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
 
   if (!isOpen) return null;
@@ -28,21 +28,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     bitcoin: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
     ethereum: '0x6c318f60c28eadc9e9ec8bdc455178a5bb318dd3',
     usdt: 'TUdeUaWWHXhsVqYwAkm3CP6THtjFFgCKYe',
-  };
-
-  const handlePayPalCheckout = async () => {
-    setIsProcessing(true);
-
-    setTimeout(() => {
-      setIsProcessing(false);
-      setOrderComplete(true);
-      setTimeout(() => {
-        clearCart();
-        onClose();
-        setOrderComplete(false);
-        setPaymentMethod(null);
-      }, 3000);
-    }, 2000);
   };
 
   return (
@@ -55,10 +40,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold">{t('checkout')}</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -120,17 +102,42 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     ← {t('back')}
                   </button>
 
-                  <Button
-                    onClick={handlePayPalCheckout}
-                    disabled={isProcessing}
-                    className="w-full bg-blue-600"
+                  <PayPalScriptProvider
+                    options={{
+                      'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID,
+                      currency: 'USD',
+                    }}
                   >
-                    {isProcessing ? t('processing') : 'Pay with PayPal'}
-                  </Button>
+                    <PayPalButtons
+                      style={{ layout: 'vertical' }}
+                      createOrder={(data, actions) =>
+                        actions.order.create({
+                          purchase_units: [
+                            {
+                              amount: {
+                                value: cartTotal.toFixed(2),
+                              },
+                            },
+                          ],
+                        })
+                      }
+                      onApprove={(data, actions) =>
+                        actions.order!.capture().then(() => {
+                          setOrderComplete(true);
+                          setTimeout(() => {
+                            clearCart();
+                            onClose();
+                            setOrderComplete(false);
+                            setPaymentMethod(null);
+                          }, 3000);
+                        })
+                      }
+                    />
+                  </PayPalScriptProvider>
                 </div>
               )}
 
-              {/* Crypto selection */}
+              {/* Crypto */}
               {paymentMethod === 'crypto' && !cryptoType && (
                 <div className="space-y-3">
                   <button
@@ -140,19 +147,12 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     ← {t('back')}
                   </button>
 
-                  <Button onClick={() => setCryptoType('bitcoin')}>
-                    Bitcoin
-                  </Button>
-                  <Button onClick={() => setCryptoType('ethereum')}>
-                    Ethereum
-                  </Button>
-                  <Button onClick={() => setCryptoType('usdt')}>
-                    USDT
-                  </Button>
+                  <Button onClick={() => setCryptoType('bitcoin')}>Bitcoin</Button>
+                  <Button onClick={() => setCryptoType('ethereum')}>Ethereum</Button>
+                  <Button onClick={() => setCryptoType('usdt')}>USDT</Button>
                 </div>
               )}
 
-              {/* Crypto address display */}
               {paymentMethod === 'crypto' && cryptoType && (
                 <div className="space-y-4">
                   <button
