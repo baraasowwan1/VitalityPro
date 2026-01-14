@@ -33,7 +33,15 @@ const products = [
     price: 29.99,
     originalPrice: null,
   },
-  
+  {
+    id: 4,
+    image: 'https://ae-pic-a1.aliexpress-media.com/kf/S30fbafd91ce74ef287e4ecbdb897c5a9z.png_960x960.png_.avif',
+    nameKey: 'Dildo Massager Female',
+    descriptionKey: 'Dildo Massager Female',
+    category: 'devices',
+    price: 159.99,
+    originalPrice: null,
+  },
 ];
 
 export function ProductGrid() {
